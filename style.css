@@ -430,3 +430,17 @@
     font-size: 0.82em;
   }
 }
+
+/* ---- 原设提示 / 聊天绑定 ---- */
+.upd-original-hint {
+  text-align: center;
+  font-size: 0.75em;
+  opacity: 0.55;
+  margin-top: 4px;
+}
+.upd-bubble-bound {
+  text-align: center;
+  font-size: 0.72em;
+  margin-bottom: 3px;
+  color: var(--SmartThemeQuoteColor, #6c8ebf);
+}

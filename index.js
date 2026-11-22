@@ -55,8 +55,8 @@
 
     try {
       const candidates = [
-        ['context.userAvatar', context.userAvatar],
-        ['context.user_avatar', context.user_avatar],
+        ['context.userAvatar', SillyTavern.getContext().userAvatar],
+        ['context.user_avatar', SillyTavern.getContext().user_avatar],
         ['window.user_avatar', window.user_avatar],
         [
           'window.getUserAvatar()',
@@ -120,6 +120,68 @@
     if (!store[key]) store[key] = { variants: [] };
     mutator(store[key].variants);
     saveStore(store);
+  }
+
+  // ---------- 原设 ----------
+
+  function getOriginal(key) {
+    const store = loadStore();
+    return (store[key] && store[key].original) || null;
+  }
+
+  function setOriginal(key, name, content) {
+    const store = loadStore();
+    if (!store[key]) store[key] = { variants: [] };
+    store[key].original = { name: name || '', content: content || '', savedAt: Date.now() };
+    saveStore(store);
+  }
+
+  // ---------- 聊天绑定 ----------
+
+  const BIND_KEY = '__bindings';
+
+  function currentChatId() {
+    try {
+      const c = SillyTavern.getContext();
+      return c.chatId || (typeof c.getCurrentChatId === 'function' ? c.getCurrentChatId() : null) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function getBindingForChat(chatId) {
+    const store = loadStore();
+    return (store[BIND_KEY] && store[BIND_KEY][chatId]) || null;
+  }
+
+  function setBinding(chatId, personaKey, variantId) {
+    const store = loadStore();
+    if (!store[BIND_KEY]) store[BIND_KEY] = {};
+    store[BIND_KEY][chatId] = { personaKey, variantId };
+    saveStore(store);
+  }
+
+  function removeBinding(chatId) {
+    const store = loadStore();
+    if (store[BIND_KEY] && store[BIND_KEY][chatId]) {
+      delete store[BIND_KEY][chatId];
+      saveStore(store);
+    }
+  }
+
+  function removeBindingsOfVariant(variantId) {
+    const store = loadStore();
+    const b = store[BIND_KEY];
+    if (!b) return;
+    Object.keys(b).forEach((cid) => {
+      if (b[cid].variantId === variantId) delete b[cid];
+    });
+    saveStore(store);
+  }
+
+  function countBindingsOfVariant(variantId) {
+    const b = loadStore()[BIND_KEY] || {};
+    return Object.keys(b).filter((cid) => b[cid].variantId === variantId).length;
   }
 
   function escapeHtml(str) {
@@ -237,7 +299,21 @@
 
   // ---------- 应用差分：覆盖当前 persona 名字 + 正文 ----------
 
-  function applyVariant(variant) {
+  function applyOriginal(orig) {
+    $('#persona_name').val(orig.name || '').trigger('input').trigger('change');
+    $('#persona_description').val(orig.content || '').trigger('input').trigger('change');
+    toastr.success(`已切换回原设：${orig.name || '未命名'}`);
+  }
+
+  function applyVariant(variant, silent) {
+    // 首次应用差分前，若还没有原设，自动把当前设定存为原设
+    const key = currentPersonaKey();
+    if (!getOriginal(key)) {
+      const curName = ($('#persona_name').val() || '').toString();
+      const curDesc = ($('#persona_description').val() || '').toString();
+      if (curName.trim() || curDesc.trim()) setOriginal(key, curName, curDesc);
+    }
+
     const $name = $('#persona_name');
     $name.val(variant.name || '');
     $name.trigger('input').trigger('change');
@@ -246,7 +322,7 @@
     $desc.val(variant.content || '');
     $desc.trigger('input').trigger('change');
 
-    toastr.success(`已应用差分：${variant.name || '未命名'}`);
+    if (!silent) toastr.success(`已应用差分：${variant.name || '未命名'}`);
   }
 
   // ---------- 弹窗状态 ----------
@@ -304,6 +380,9 @@
   function renderListPage($body, key) {
     const variants = getVariantsFor(key);
 
+    const chatId = currentChatId();
+    const chatBinding = chatId ? getBindingForChat(chatId) : null;
+
     const $list = $('<div class="upd-bubble-list"></div>');
     if (!variants.length) {
       $list.append('<div class="upd-empty-list">暂无差分，点击下方"新增差分"创建第一个平行世界～</div>');
@@ -312,6 +391,7 @@
         const $bubble = $(`
           <div class="upd-bubble">
             <div class="upd-bubble-name">${escapeHtml(v.name || '未命名差分')}</div>
+            ${chatBinding && chatBinding.variantId === v.id ? '<div class="upd-bubble-bound">🔗 已绑定当前聊天</div>' : ''}
             ${v.note ? `<div class="upd-bubble-note">${escapeHtml(v.note)}</div>` : ''}
             <div class="upd-bubble-tags">
               ${(v.tags || []).map((t) => `<span class="upd-bubble-tag">${escapeHtml(t)}</span>`).join('')}
@@ -332,7 +412,36 @@
       <div class="upd-bottom-actions">
         <div class="menu_button" id="upd_new"><span class="fa-solid fa-plus"></span> 新增差分</div>
       </div>
+      <div class="upd-bottom-actions">
+        <div class="menu_button" id="upd_orig_apply"><span class="fa-solid fa-rotate-left"></span> 切换原设</div>
+        <div class="menu_button" id="upd_orig_save"><span class="fa-solid fa-bookmark"></span> 存当前为原设</div>
+      </div>
+      <div class="upd-original-hint">${
+        getOriginal(key)
+          ? '当前已保存的原设：' + escapeHtml(getOriginal(key).name || '未命名')
+          : '尚未保存原设（首次应用差分时会自动保存当前设定）'
+      }</div>
     `);
+    $actions.find('#upd_orig_apply').on('click', () => {
+      const orig = getOriginal(key);
+      if (!orig) {
+        toastr.warning('还没有保存原设，请先点"存当前为原设"');
+        return;
+      }
+      applyOriginal(orig);
+    });
+    $actions.find('#upd_orig_save').on('click', () => {
+      if (getOriginal(key) && !confirm('已经有原设了，要用当前设定覆盖它吗？')) return;
+      const curName = ($('#persona_name').val() || '').toString();
+      const curDesc = ($('#persona_description').val() || '').toString();
+      if (!curName.trim() && !curDesc.trim()) {
+        toastr.warning('当前设定是空的，无法保存为原设');
+        return;
+      }
+      setOriginal(key, curName, curDesc);
+      toastr.success('已把当前设定存为原设');
+      render($body.closest('.upd-wrap'), key);
+    });
     $actions.find('#upd_new').on('click', () => {
       const draft = { id: uuid(), name: '', content: '', tags: [], note: '', updatedAt: Date.now() };
       withVariantsFor(key, (list) => list.push(draft));
@@ -354,6 +463,11 @@
       return;
     }
 
+    const detailChatId = currentChatId();
+    const detailBinding = detailChatId ? getBindingForChat(detailChatId) : null;
+    const boundHere = !!(detailBinding && detailBinding.variantId === v.id);
+    const boundCount = countBindingsOfVariant(v.id);
+
     const $html = $(`
       <div class="upd-detail-card">
         <div class="upd-detail-name">${escapeHtml(v.name || '未命名差分')}</div>
@@ -374,6 +488,10 @@
           <div class="menu_button" id="upd_del"><span class="fa-solid fa-trash"></span> 删除</div>
         </div>
         <div class="upd-bottom-actions">
+          <div class="menu_button" id="upd_bind"><span class="fa-solid ${boundHere ? 'fa-link-slash' : 'fa-link'}"></span> ${boundHere ? '解除当前聊天绑定' : '绑定当前聊天'}</div>
+        </div>
+        <div class="upd-original-hint">${boundCount ? `此差分已绑定 ${boundCount} 个聊天` : '此差分还没有绑定任何聊天'}</div>
+        <div class="upd-bottom-actions">
           <div class="menu_button" id="upd_back_list"><span class="fa-solid fa-arrow-left"></span> 返回列表</div>
         </div>
       </div>
@@ -385,6 +503,23 @@
     });
 
     $html.find('#upd_apply').on('click', () => applyVariant(v));
+
+    $html.find('#upd_bind').on('click', () => {
+      const cid = currentChatId();
+      if (!cid) {
+        toastr.warning('请先打开一个聊天窗口再绑定');
+        return;
+      }
+      if (boundHere) {
+        removeBinding(cid);
+        toastr.success('已解除当前聊天的绑定');
+      } else {
+        const had = getBindingForChat(cid);
+        setBinding(cid, key, v.id);
+        toastr.success(had ? '已改绑到此差分（一个聊天只能绑定一个差分）' : '已绑定当前聊天，之后打开此聊天会自动应用');
+      }
+      render($body.closest('.upd-wrap'), key);
+    });
 
     $html.find('#upd_edit').on('click', () => {
       popupState.editing = true;
@@ -411,6 +546,7 @@
         const idx = list.findIndex((x) => x.id === v.id);
         if (idx >= 0) list.splice(idx, 1);
       });
+      removeBindingsOfVariant(v.id);
       popupState.selectedId = null;
       render($body.closest('.upd-wrap'), key);
       toastr.success('已删除差分');
@@ -772,6 +908,32 @@
     }
   }
 
+  // ---------- 切换聊天时自动应用绑定的差分 ----------
+
+  function autoApplyForChat() {
+    const chatId = currentChatId();
+    if (!chatId) return;
+    const b = getBindingForChat(chatId);
+    if (!b) return;
+
+    const key = currentPersonaKey();
+    if (b.personaKey !== key) {
+      toastr.info('此聊天绑定的差分属于另一个 user 人设，当前人设不同，已跳过自动应用');
+      return;
+    }
+    const v = getVariantsFor(b.personaKey).find((x) => x.id === b.variantId);
+    if (!v) {
+      removeBinding(chatId);
+      return;
+    }
+    const curName = ($('#persona_name').val() || '').toString();
+    const curDesc = ($('#persona_description').val() || '').toString();
+    if (curName === (v.name || '') && curDesc === (v.content || '')) return;
+
+    applyVariant(v, true);
+    toastr.info(`已为此聊天应用差分：${v.name || '未命名'}`);
+  }
+
   // ---------- 初始化 ----------
 
   jQuery(async () => {
@@ -779,6 +941,12 @@
     const observer = new MutationObserver(() => injectEntryButton());
     const target = document.querySelector('#user_settings_block') || document.body;
     observer.observe(target, { childList: true, subtree: true });
+    try {
+      const c = SillyTavern.getContext();
+      c.eventSource.on(c.eventTypes.CHAT_CHANGED, () => setTimeout(autoApplyForChat, 800));
+    } catch (e) {
+      console.warn('[st-user-persona-diff] 无法监听聊天切换事件', e);
+    }
     console.info('[st-user-persona-diff] Initialized');
   });
 })();
