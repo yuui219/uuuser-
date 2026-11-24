@@ -1,79 +1,79 @@
 /**
- * User设定差分1.0 (st-user-persona-diff)
+*User设定差值1.0(st-user-persona-diff)
  * ------------------------------------------------
- * 为"每一个 user persona"单独保存多个平行世界差分（名字 + 正文 + 标签 + 备注），
+*为"每一个用户角色"单独保存多个平行世界差分（名字+正文+标签+备注），
  * 弹窗内以气泡卡片形式浏览，点开查看详情，可编辑/复制/删除，并可一键应用覆盖到当前 persona。
  */
 
-(function () {
-  'use strict';
+(函数(){(){功能 () {){功能 () {
+  '严格使用';'严格使用';
 
-  const MODULE_NAME = 'st_user_persona_diff';
-  const context = SillyTavern.getContext();
+Const module_NAME='st_user_persona_diff'；Const module_NAME='st_user_persona_diff'；
+Const语境=SilyTavern.getContext()；Const 语境 = SillyTavern.getContext();
 
-  // ---------- 存储：优先使用 extension_settings，兜底用 localStorage ----------
+  //----------存储：优先使用扩展设置(_S)，兜底用localStorage----------//----------存储：优先使用扩展设置(_S)，兜底用localStorage----------
 
-  function loadStore() {
-    try {
-      const settings = context.extensionSettings || {};
-      if (!settings[MODULE_NAME]) settings[MODULE_NAME] = {};
-      return settings[MODULE_NAME];
-    } catch {
-      try {
-        return JSON.parse(localStorage.getItem(MODULE_NAME) || '{}');
-      } catch {
-        return {};
+  功能 loadStore() {功能 {() {
+    尝试 {
+Const设置=语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；=语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；语境语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；
+Const设置
+      返回 设置[module_NAME];返回 设置[module_NAME];
+    } 赶上 {
+      尝试 {
+        返回 JSON.解析(localStorage.getitem(module_NAME) || '{}');返回 JSON.解析(localStorage.getitem(module_NAME) || '{}');
+      } 赶上 {} 赶上 {
+        返回 {};返回 {};
       }
     }
   }
 
-  function saveStore(store) {
-    try {
-      const settings = context.extensionSettings || {};
-      settings[MODULE_NAME] = store;
-      if (typeof context.saveSettingsDebounced === 'function') {
-        context.saveSettingsDebounced();
-      } else if (typeof window.saveSettingsDebounced === 'function') {
-        window.saveSettingsDebounced();
+  功能 saveStore(商店) {功能 saveStore(商店) {
+    尝试 {
+Const设置=语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；===语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；==语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；=语境.ExtensionSettings||{}；Const设置=语境.extensionSettings||{}；
+      设置[模块名称] = 商店；]=商店；] = 商店;设置[模块名称] = 商店；]=商店；] = 商店;
+      如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {如果 (typeof 语境.保存设置 === "功能性") {
+        语境.保存设置();语境.保存设置();语境.保存设置();语境.保存设置();语境.保存设置();语境.保存设置();语境.保存设置();语境.保存设置();
+      } 其他 如果 (typeof 窗户.保存设置 === "功能性") {} 其他 如果 (typeof 窗户.保存设置 === "功能性") {} 其他 如果 (typeof 窗户.保存设置 === "功能性") {} 其他 如果 (typeof 窗户.保存设置 === "功能性") {
+        窗户.保存设置();窗户.保存设置();窗户.保存设置();窗户.保存设置();窗户.保存设置();窗户.保存设置();窗户.保存设置();窗户.保存设置();
       }
-    } catch {
-      try {
-        localStorage.setItem(MODULE_NAME, JSON.stringify(store));
-      } catch {}
+    } 赶上 {} 赶上 {} 赶上 {} 赶上 {} 赶上 {} 赶上 {} 赶上 {} 赶上 {
+      尝试 {尝试 {尝试 {尝试 {尝试 {尝试 {尝试 {尝试 {
+localStorage。这样(模块名称，JSON.使字符串化(商店))；localStorage.这样(模块名称, JSON.使字符串化(商店));(模块名称，JSON.使字符串化(商店))；localStorage.这样(模块名称, JSON.使字符串化(商店));(模块名称，JSON.使字符串化(商店))；localStorage.这样(模块名称, JSON.使字符串化(商店));(模块名称，JSON.使字符串化(商店))；localStorage.这样(模块名称, JSON.使字符串化(商店));
+      } 赶上 {}} 赶上 {}} 赶上 {}} 赶上 {}
     }
   }
 
-  function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 UUIDID() {在 在 在 在 在 在 UUID在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() { 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {功能 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 UUID() {
+    返回 "xxxxxxx-xxxxx-4xxx-yxxx-xxxxxxxxxxxxxxxx"是指一个字母,一个字母,一个字母,一个字母,一个字母..取代(/[xy]/g 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在 在, (c) => {
+查看r=(数学.随机()*16)|0；
+      返回 (c === 'x' ? r : (r & 0x3) | 0x8).功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 function toString() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() { [native code] }() {本地代码}功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能 功能功能功能功能功能功能功能功能函数toString(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机代码]}(){[本机没有]}(){[本机没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native没有]}(){[native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [nati{ [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { ve 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] () { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }(16);() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }() { [native 没有] }(16);
     });
   }
 
-  function currentPersonaKeyDebug() {
-    const debug = { method: null, raw: null };
+功能currentpersonakeydebug(){功能 currentPersonaKeyDebug() {(){功能 currentPersonaKeyDebug() {
+    查看没有 = { 这种方法: 没有, 没有: 没有 };查看没有 = { 这种方法: 没有, 没有: 没有 };查看没有 = { 这种方法: 没有, 没有: 没有 };查看没有 = { 这种方法: 没有, 没有: 没有 };
 
-    try {
-      const candidates = [
-        ['context.userAvatar', SillyTavern.getContext().userAvatar],
-        ['context.user_avatar', SillyTavern.getContext().user_avatar],
-        ['window.user_avatar', window.user_avatar],
+    尝试 {尝试 {尝试 {尝试 {
+      查看在职者 = [查看在职者 = [查看在职者 = [查看在职者 = [
+        [在"context.用户Avatar"中,, SillyTavern.getContext().用户Avatar],[在"context.用户[在"context.用户Avatar"中,, SillyTavern.getContext().用户Avatar],[在"context.用户Avatar"中,, SillyTavern.getContext().用户Avatar],
+['context.user_avatar'，SillyTavern.getContext().user_avatar]，
+        ['window.user_avatar', 窗户.user_avatar],
         [
           'window.getUserAvatar()',
-          typeof window.getUserAvatar === 'function' ? window.getUserAvatar() : null,
+          typeof 窗户.getUserAvatar === "功能性" ? 窗户.getUserAvatar() : 没有,
         ],
       ];
-      for (const [label, c] of candidates) {
-        if (c && typeof c === 'string' && c.trim()) {
-          debug.method = '全局变量:' + label;
-          debug.raw = c.trim();
-          return { key: 'avatar:' + c.trim(), debug };
+      for (Const [label, c] of 在职者) {
+        如果 (c && typeof c === 'string' && c.trim()) {
+          没有.这种方法 = '全局变量:' + label;
+          没有.没有 = c.trim();
+          返回 { key: 'avatar:' + c.trim(), 没有 };
         }
       }
-    } catch {}
+    } 赶上 {}
 
-    try {
-      const $selected = $(
+    尝试 {
+      查看$selected = $(
         [
           '#user_avatar_block .avatar-container.selected img',
           '#user_avatar_block img.selected',
